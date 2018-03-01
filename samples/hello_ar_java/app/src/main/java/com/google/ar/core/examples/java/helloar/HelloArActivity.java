@@ -38,6 +38,7 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Point;
 import com.google.ar.core.Point.OrientationMode;
 import com.google.ar.core.PointCloud;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
@@ -52,6 +53,7 @@ import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -73,10 +75,16 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
   private GestureDetector gestureDetector;
   private Snackbar messageSnackbar;
   private DisplayRotationHelper displayRotationHelper;
+  private CompassHelper compassHelper;
 
   private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
   private final ObjectRenderer virtualObject = new ObjectRenderer();
   private final ObjectRenderer virtualObjectShadow = new ObjectRenderer();
+
+  private final ObjectRenderer compassShell = new ObjectRenderer();
+  private final ObjectRenderer compassNeedle = new ObjectRenderer();
+  private final ObjectRenderer compassGlass = new ObjectRenderer();
+
   private final PlaneRenderer planeRenderer = new PlaneRenderer();
   private final PointCloudRenderer pointCloud = new PointCloudRenderer();
 
@@ -87,12 +95,20 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
   private final ArrayBlockingQueue<MotionEvent> queuedSingleTaps = new ArrayBlockingQueue<>(16);
   private final ArrayList<Anchor> anchors = new ArrayList<>();
 
+  private final float compassScale = .003f;
+  private final Pose cameraRelativeCompassPose = Pose.makeTranslation(0, -0.07f, -0.2f);
+
+  // Camera-reative forward vector for orienting the compass body.  Directed up slightly, so
+  // that the compass doesn't flip if you tilt down past vertical
+  private final float[] COMPASS_FORWARD_VECTOR = new float[]{0, 0.5f, -1};
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     surfaceView = findViewById(R.id.surfaceview);
     displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
+    compassHelper = new CompassHelper(/*context=*/ this, displayRotationHelper);
 
     // Set up tap listener.
     gestureDetector =
@@ -187,6 +203,7 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
     session.resume();
     surfaceView.onResume();
     displayRotationHelper.onResume();
+    compassHelper.onResume();
   }
 
   @Override
@@ -196,6 +213,7 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
       // Note that the order matters - GLSurfaceView is paused first so that it does not try
       // to query the session. If Session is paused before GLSurfaceView, GLSurfaceView may
       // still call session.update() and get a SessionPausedException.
+      compassHelper.onPause();
       displayRotationHelper.onPause();
       surfaceView.onPause();
       session.pause();
@@ -253,6 +271,18 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
       virtualObjectShadow.createOnGlThread(/*context=*/ this, "andy_shadow.obj", "andy_shadow.png");
       virtualObjectShadow.setBlendMode(BlendMode.Shadow);
       virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
+
+      compassShell.createOnGlThread(/*context=*/ this, "compass_shell.obj", "compass_shell.png");
+      compassShell.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
+
+      compassGlass.createOnGlThread(/*context=*/ this, "compass_glass.obj",
+          "compass_glass.png");
+      compassGlass.setBlendMode(BlendMode.Grid);
+      compassGlass.setMaterialProperties(0.0f, 3.5f, 1.0f, 15.0f);
+
+      compassNeedle.createOnGlThread(/*context=*/ this, "compass_needle.obj",
+          "compass_needle.png");
+      compassNeedle.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
     } catch (IOException e) {
       Log.e(TAG, "Failed to read obj file");
     }
@@ -290,6 +320,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
       // camera framerate.
       Frame frame = session.update();
       Camera camera = frame.getCamera();
+
+      compassHelper.onUpdate(frame);
 
       // Handle taps. Handling only one tap per frame, as taps are usually low frequency
       // compared to frame rate.
@@ -379,6 +411,26 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
         virtualObject.draw(viewmtx, projmtx, lightIntensity);
         virtualObjectShadow.draw(viewmtx, projmtx, lightIntensity);
       }
+
+      Pose compassBase = camera.getPose().compose(cameraRelativeCompassPose).extractTranslation();
+      Pose needlePose = compassBase.compose(compassHelper.rotateXToEastPose());
+
+      float[] compassForwardDirection = new float[3];
+      camera.getPose().rotateVector(COMPASS_FORWARD_VECTOR, 0, compassForwardDirection, 0);
+
+      Pose shellPose = compassBase.compose(MathHelpers.axisRotation(1,
+          -(float)Math.atan2(compassForwardDirection[2], compassForwardDirection[0])));
+
+      needlePose.toMatrix(anchorMatrix, 0);
+      compassNeedle.updateModelMatrix(anchorMatrix, compassScale);
+      compassNeedle.draw(viewmtx, projmtx, lightIntensity);
+
+      shellPose.toMatrix(anchorMatrix, 0);
+      compassShell.updateModelMatrix(anchorMatrix, compassScale);
+      compassShell.draw(viewmtx, projmtx, lightIntensity);
+      compassGlass.updateModelMatrix(anchorMatrix, compassScale);
+      compassGlass.draw(viewmtx, projmtx, lightIntensity);
+
 
     } catch (Throwable t) {
       // Avoid crashing the application due to unhandled exceptions.
