@@ -12,14 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.core.examples.java.helloar.rendering;
+package org.inio.arcore.compassdemo.rendering;
 
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import com.google.ar.core.PointCloud;
-import com.google.ar.core.examples.java.helloar.R;
+import org.inio.arcore.compassdemo.R;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 

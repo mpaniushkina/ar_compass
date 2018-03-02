@@ -1,4 +1,4 @@
-package com.google.ar.core.examples.java.helloar;
+package org.inio.arcore.compassdemo;
 
 import com.google.ar.core.Pose;
 import java.util.Arrays;

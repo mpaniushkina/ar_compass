@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.ar.core.examples.java.helloar;
+package org.inio.arcore.compassdemo;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -42,18 +42,17 @@ import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.java.helloar.rendering.BackgroundRenderer;
-import com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer;
-import com.google.ar.core.examples.java.helloar.rendering.ObjectRenderer.BlendMode;
-import com.google.ar.core.examples.java.helloar.rendering.PlaneRenderer;
-import com.google.ar.core.examples.java.helloar.rendering.PointCloudRenderer;
+import org.inio.arcore.compassdemo.rendering.BackgroundRenderer;
+import org.inio.arcore.compassdemo.rendering.ObjectRenderer;
+import org.inio.arcore.compassdemo.rendering.ObjectRenderer.BlendMode;
+import org.inio.arcore.compassdemo.rendering.PlaneRenderer;
+import org.inio.arcore.compassdemo.rendering.PointCloudRenderer;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;

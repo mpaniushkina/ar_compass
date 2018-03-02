@@ -8,3 +8,5 @@ build/
 local.properties
 # OS configurations.
 .DS_Store
+
+samples/hello_ar_java/app/release/*

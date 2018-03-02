@@ -1,19 +1,13 @@
-package com.google.ar.core.examples.java.helloar;
+package org.inio.arcore.compassdemo;
 
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorEventListener2;
 import android.hardware.SensorManager;
-import android.support.v4.math.MathUtils;
-import android.util.Log;
-import android.view.Display;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
-import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
-import java.util.Arrays;
 
 /**
  * Created by inio on 2/28/18.

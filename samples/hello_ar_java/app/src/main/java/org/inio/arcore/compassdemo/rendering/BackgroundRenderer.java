@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.ar.core.examples.java.helloar.rendering;
+package org.inio.arcore.compassdemo.rendering;
 
 import android.content.Context;
 import android.opengl.GLES11Ext;
@@ -20,7 +20,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
-import com.google.ar.core.examples.java.helloar.R;
+import org.inio.arcore.compassdemo.R;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
