@@ -5,6 +5,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+
+import com.google.ar.core.Anchor;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
@@ -18,8 +20,7 @@ public class CompassHelper implements SensorEventListener {
   private Pose deviceToWorld;
   private final DisplayRotationHelper rotationHelper;
   private SensorManager sensorManager;
-
-
+  
   private final float DECAY_RATE = 0.9f;
   private final float SQRT_HALF = (float)Math.sqrt(0.5f);
   private final float VALID_TRESHOLD = 0.1f;
@@ -82,11 +83,45 @@ public class CompassHelper implements SensorEventListener {
             rotationHelper.getRotation()));
   }
 
+  private void setDirection (Anchor anchor) {
+
+  }
+
   @Override
   public void onSensorChanged(SensorEvent sensorEvent) {
+    float[] mAccelerometerData = new float[3];
+    float[] mMagnetometerData = new float[3];
+    int sensorType = sensorEvent.sensor.getType();
+    switch (sensorType) {
+      case Sensor.TYPE_ACCELEROMETER:
+        mAccelerometerData = sensorEvent.values.clone();
+        break;
+      case Sensor.TYPE_MAGNETIC_FIELD:
+        mMagnetometerData = sensorEvent.values.clone();
+        break;
+      default:
+        return;
+    }
+    float[] rotationMatrix = new float[9];
+    boolean rotationOK = SensorManager.getRotationMatrix(rotationMatrix,null, mAccelerometerData, mMagnetometerData);
+    float[] orientationValues = new float[3];
+    if (rotationOK) {
+      SensorManager.getOrientation(rotationMatrix, orientationValues);
+    }
+    float azimuth = orientationValues[0];
+    float pitch = orientationValues[1];
+    float roll = orientationValues[2];
+    float[] newValues = new float[3];
+    newValues[0] = 0.0f;
+    newValues[1] = 0.0f;
+    newValues[2] = -2.0f;
+
     if (sensorEvent.sensor.getType() != Sensor.TYPE_MAGNETIC_FIELD) return;
     float[] rotated = new float[3];
-    deviceToWorld.rotateVector(sensorEvent.values, 0, rotated, 0);
+    if (deviceToWorld != null) {
+//      deviceToWorld.rotateVector(sensorEvent.values, 0, rotated, 0);
+      deviceToWorld.rotateVector(newValues, 0, rotated, 0);
+    }
     for(int i=0; i<3; ++i) {
       accumulated[i] = accumulated[i] * DECAY_RATE + rotated[i];
     }

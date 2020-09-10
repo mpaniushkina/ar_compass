@@ -47,6 +47,8 @@ import org.inio.arcore.compassdemo.rendering.ObjectRenderer;
 import org.inio.arcore.compassdemo.rendering.ObjectRenderer.BlendMode;
 import org.inio.arcore.compassdemo.rendering.PlaneRenderer;
 import org.inio.arcore.compassdemo.rendering.PointCloudRenderer;
+
+import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
 import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
@@ -94,8 +96,8 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
   private final ArrayBlockingQueue<MotionEvent> queuedSingleTaps = new ArrayBlockingQueue<>(16);
   private final ArrayList<Anchor> anchors = new ArrayList<>();
 
-  private final float compassScale = .003f;
-  private final Pose cameraRelativeCompassPose = Pose.makeTranslation(0, -0.07f, -0.2f);
+  private final float compassScale = .3f;
+  private final Pose cameraRelativeCompassPose = Pose.makeTranslation(0, 0.0f, -0.2f);
 
   // Camera-reative forward vector for orienting the compass body.  Directed up slightly, so
   // that the compass doesn't flip if you tilt down past vertical
@@ -199,7 +201,11 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
 
     showLoadingMessage();
     // Note that order matters - see the note in onPause(), the reverse applies here.
-    session.resume();
+    try {
+      session.resume();
+    } catch (CameraNotAvailableException e) {
+      e.printStackTrace();
+    }
     surfaceView.onResume();
     displayRotationHelper.onResume();
     compassHelper.onResume();
@@ -271,16 +277,16 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
       virtualObjectShadow.setBlendMode(BlendMode.Shadow);
       virtualObjectShadow.setMaterialProperties(1.0f, 0.0f, 0.0f, 1.0f);
 
-      compassShell.createOnGlThread(/*context=*/ this, "compass_shell.obj", "compass_shell.png");
-      compassShell.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
+//      compassShell.createOnGlThread(/*context=*/ this, "compass_shell.obj", "compass_shell.png");
+//      compassShell.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
 
-      compassGlass.createOnGlThread(/*context=*/ this, "compass_glass.obj",
-          "compass_glass.png");
-      compassGlass.setBlendMode(BlendMode.Grid);
-      compassGlass.setMaterialProperties(0.0f, 3.5f, 1.0f, 15.0f);
+//      compassGlass.createOnGlThread(/*context=*/ this, "compass_glass.obj",
+//          "compass_glass.png");
+//      compassGlass.setBlendMode(BlendMode.Grid);
+//      compassGlass.setMaterialProperties(0.0f, 3.5f, 1.0f, 15.0f);
 
-      compassNeedle.createOnGlThread(/*context=*/ this, "compass_needle.obj",
-          "compass_needle.png");
+      compassNeedle.createOnGlThread(/*context=*/ this, "arrow/arrow.obj",
+          "arrow/arrow.png");
       compassNeedle.setMaterialProperties(0.0f, 3.5f, 1.0f, 6.0f);
     } catch (IOException e) {
       Log.e(TAG, "Failed to read obj file");
@@ -424,12 +430,11 @@ public class HelloArActivity extends AppCompatActivity implements GLSurfaceView.
       compassNeedle.updateModelMatrix(anchorMatrix, compassScale);
       compassNeedle.draw(viewmtx, projmtx, lightIntensity);
 
-      shellPose.toMatrix(anchorMatrix, 0);
-      compassShell.updateModelMatrix(anchorMatrix, compassScale);
-      compassShell.draw(viewmtx, projmtx, lightIntensity);
-      compassGlass.updateModelMatrix(anchorMatrix, compassScale);
-      compassGlass.draw(viewmtx, projmtx, lightIntensity);
-
+//      shellPose.toMatrix(anchorMatrix, 0);
+//      compassShell.updateModelMatrix(anchorMatrix, compassScale);
+//      compassShell.draw(viewmtx, projmtx, lightIntensity);
+//      compassGlass.updateModelMatrix(anchorMatrix, compassScale);
+//      compassGlass.draw(viewmtx, projmtx, lightIntensity);
 
     } catch (Throwable t) {
       // Avoid crashing the application due to unhandled exceptions.
